@@ -1,0 +1,42 @@
+name: .NET Build
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v3.1.0
+    - name: Nuget Restore
+      run: nuget.exe restore
+    - name: Build
+      run: dotnet.exe build --configuration Release
+      env:
+        DOTNET_CLI_TELEMETRY_OPTOUT: 1
+    - name: Create Release
+      id: create_release
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        title: Release ${{ github.sha }}
+        files: ./bin/Release/ETWHash.exe
+        prerelease: false
+    - name: Create Release Zip File
+      uses: thedoctor0/zip-release@main
+      with:
+        type: 'zip'
+        filename: 'ETWHash.zip'
+        path: ./bin/Release/
+    - name: Upload Release Zip
+      id: create_release-zip
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        title: Release ${{ github.sha }}
+        files: ETWHash.zip
+        prerelease: false
